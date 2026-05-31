@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardápios</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --orange: #C97820;
+    --pink-dark: #C45A7A;
+    --pink-mid: #E8839F;
+    --pink-light: #F7C5D2;
+    --muted-pink: #A07080;
+    --yellow: #F5EDB0;
+  }
+
+  body {
+    background: #1a1a1a;
+    font-family: 'Source Sans 3', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px 40px;
+    min-height: 100vh;
+  }
+
+  /* ── SWITCHER ── */
+  .switcher {
+    display: flex;
+    background: #2a2a2a;
+    border-radius: 50px;
+    padding: 5px;
+    gap: 4px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    width: 100%;
+    max-width: 500px;
+  }
+  .switcher button {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: #888;
+    white-space: nowrap;
+  }
+  .switcher button.active-paladars {
+    background: linear-gradient(135deg, #C97820, #E89040);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(201,120,32,0.45);
+  }
+  .switcher button.active-malef {
+    background: linear-gradient(135deg, #C45A7A, #E8839F);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(196,90,122,0.45);
+  }
+
+  /* ── CARDAPIO WRAPPER ── */
+  .cardapio { display: none; width: 100%; max-width: 794px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; }
+  .cardapio.active { display: block; }
+
+  /* ══════════════════════════════
+     PALADARS
+  ══════════════════════════════ */
+  .p-page {
+    background: #fff;
+    padding: clamp(16px, 4vw, 53px) clamp(16px, 4vw, 60px) clamp(16px, 3vw, 45px);
+    display: flex;
+    flex-direction: column;
+    min-height: min(297mm, 100%);
+  }
+  .p-logo-area { margin-bottom: clamp(10px,2vw,22px); height: clamp(50px,8vw,83px); display: flex; align-items: center; }
+  .p-logo-area img { height: 100%; object-fit: contain; }
+  .p-logo-ph { font-size: 9px; letter-spacing: 3px; color: #ccc; text-transform: uppercase; }
+  .p-top-rule { border: none; border-top: 1.5px solid var(--orange); margin-bottom: clamp(10px,2vw,26px); }
+
+  .p-cat {
+    font-size: clamp(8px,1.3vw,11px); font-weight: 700;
+    letter-spacing: 1.5px; color: var(--orange);
+    text-transform: uppercase;
+    margin-bottom: clamp(4px,1vw,9px); margin-top: clamp(10px,2vw,19px);
+  }
+  .p-cat:first-of-type { margin-top: 0; }
+
+  .p-item {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: clamp(3px,0.5vw,4.5px) 0;
+    border-bottom: 1px dashed #E0D0BB; gap: clamp(8px,2vw,15px);
+  }
+  .p-item:last-child { border-bottom: none; }
+  .p-item-name { font-size: clamp(10px,1.8vw,14px); font-weight: 400; color: #1a1a1a; }
+  .p-item-price { font-size: clamp(10px,1.8vw,14px); font-weight: 400; color: #1a1a1a; white-space: nowrap; flex-shrink: 0; }
+  .p-item-desc { font-size: clamp(7px,1.2vw,10px); font-style: italic; color: #777; margin-top: 1px; }
+
+  .p-pizza-grid { display: flex; flex-direction: column; gap: clamp(3px,0.5vw,5px); margin-bottom: clamp(3px,0.5vw,4px); }
+  .p-pizza-card {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid #DDD; border-radius: 3px;
+    padding: clamp(6px,1vw,9px) clamp(8px,1.5vw,15px);
+  }
+  .p-pizza-card .p-item-name { font-weight: 700; }
+  .p-pizza-card .p-item-price { font-weight: 700; color: var(--orange); }
+
+  .p-fatia-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: clamp(6px,1vw,7px) 0 clamp(2px,0.5vw,2px);
+    border-bottom: 1px dashed #E0D0BB; gap: clamp(8px,2vw,15px);
+  }
+
+  .p-combo-card {
+    border: 1px solid #DDD; border-radius: 3px;
+    padding: clamp(8px,1.2vw,11px) clamp(10px,1.5vw,15px);
+    margin-bottom: clamp(4px,0.7vw,5px);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: clamp(8px,2vw,22px);
+  }
+  .p-combo-info { flex: 1; }
+  .p-combo-name { font-size: clamp(10px,1.8vw,14px); font-weight: 700; margin-bottom: clamp(2px,0.4vw,4px); }
+  .p-combo-desc { font-size: clamp(7px,1.2vw,10px); font-style: italic; color: #777; line-height: 1.5; }
+  .p-combo-price { font-size: clamp(12px,2.2vw,18px); font-weight: 700; color: var(--orange); white-space: nowrap; padding-top: 1px; }
+
+  .p-add-row { display: flex; flex-wrap: wrap; gap: clamp(4px,0.8vw,7px); margin-top: clamp(4px,0.8vw,7px); }
+  .p-add-chip {
+    border: 1px solid #DDD; border-radius: 20px;
+    padding: clamp(3px,0.6vw,5px) clamp(8px,1.5vw,15px);
+    font-size: clamp(8px,1.4vw,11px);
+    display: flex; align-items: center; gap: clamp(4px,0.8vw,11px);
+  }
+  .p-chip-price { font-weight: 700; color: var(--orange); }
+
+  /* ══════════════════════════════
+     MALEF
+  ══════════════════════════════ */
+  .m-page {
+    background: linear-gradient(to bottom, #FFFAF8, #FDE8EE);
+    display: flex; flex-direction: column;
+    min-height: min(297mm, 100%);
+  }
+
+  .m-header {
+    background: linear-gradient(to bottom, var(--pink-mid), var(--pink-dark));
+    padding: clamp(14px,2.5vw,18px) clamp(16px,3.5vw,28px);
+    display: flex; align-items: center; gap: clamp(12px,2.5vw,20px);
+    position: relative; overflow: hidden;
+  }
+  .m-header::after {
+    content: ''; position: absolute; right: -60px; top: -60px;
+    width: 200px; height: 200px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .m-header::before {
+    content: ''; position: absolute; right: -20px; top: -90px;
+    width: 260px; height: 260px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .m-logo-circle {
+    width: clamp(52px,10vw,78px); height: clamp(52px,10vw,78px);
+    border-radius: 50%; background: var(--yellow);
+    border: 2px solid rgba(255,255,255,0.5);
+    flex-shrink: 0; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .m-logo-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+  .m-header-sub { font-size: clamp(7px,1.2vw,9px); letter-spacing: 4px; color: rgba(255,255,255,0.85); text-transform: uppercase; margin-bottom: 4px; }
+  .m-header-name { font-size: clamp(22px,4.5vw,30px); font-weight: 700; color: #fff; line-height: 1; margin-bottom: 6px; }
+  .m-header-rule { width: 120px; height: 1px; background: rgba(255,255,255,0.4); margin-bottom: 5px; }
+  .m-header-tag { font-size: clamp(7px,1.2vw,9px); letter-spacing: 3px; color: rgba(255,255,255,0.65); text-transform: uppercase; }
+
+  .m-content { flex: 1; padding: clamp(14px,2.5vw,18px) clamp(16px,3.5vw,28px) clamp(12px,2vw,16px); }
+
+  .m-section-heading { text-align: center; margin-bottom: clamp(10px,2vw,16px); }
+  .m-section-heading h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(16px,3vw,22px); font-style: italic;
+    font-weight: 400; color: var(--pink-dark);
+  }
+  .m-heading-deco { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; }
+  .m-heading-deco span { display: block; width: 40px; height: 1px; background: var(--pink-light); }
+  .m-heading-deco i { display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--pink-mid); }
+
+  .m-combo-card {
+    background: linear-gradient(to right, #FDE8EE, #FFFAF8);
+    border: 1px solid var(--pink-light);
+    border-left: 4px solid var(--pink-mid);
+    border-radius: 6px;
+    padding: clamp(8px,1.5vw,10px) clamp(10px,2vw,14px) clamp(8px,1.5vw,10px) clamp(8px,1.5vw,12px);
+    margin-bottom: clamp(5px,1vw,8px);
+  }
+  .m-combo-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .m-combo-name { font-size: clamp(10px,1.8vw,12px); font-weight: 700; color: var(--pink-dark); line-height: 1.3; }
+  .m-combo-tag {
+    background: var(--pink-light); border-radius: 10px;
+    padding: 2px 9px; font-size: clamp(6px,1vw,7px);
+    letter-spacing: 1px; color: var(--pink-dark);
+    text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .m-combo-desc { font-size: clamp(8px,1.4vw,9px); font-style: italic; color: var(--muted-pink); margin-top: 2px; line-height: 1.4; }
+  .m-combo-price { font-size: clamp(12px,2.2vw,15px); font-weight: 700; color: var(--pink-dark); text-align: right; margin-top: clamp(4px,0.8vw,6px); }
+
+  /* Grid de salgados e doces: 2 colunas em telas maiores, 1 em pequenas */
+  .m-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 clamp(10px,2.5vw,20px);
+    margin-top: clamp(10px,2vw,14px);
+  }
+  @media (max-width: 480px) {
+    .m-bottom-grid { grid-template-columns: 1fr; }
+  }
+
+  .m-cat-block { margin-bottom: clamp(7px,1.5vw,10px); }
+  .m-cat-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(10px,1.8vw,12px); font-style: italic;
+    font-weight: 400; color: var(--pink-dark);
+    margin-bottom: 3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .m-cat-title::after { content: ''; flex: 1; height: 1px; background: var(--pink-light); }
+  .m-cat-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--pink-mid); flex-shrink: 0; }
+
+  .m-item {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: clamp(2px,0.4vw,3px) 0;
+    border-bottom: 1px dashed #EDD8E0; gap: 6px;
+  }
+  .m-item:last-child { border-bottom: none; }
+  .m-item-name { font-size: clamp(9px,1.6vw,10px); font-weight: 400; color: #2A1A1F; }
+  .m-item-price { font-size: clamp(9px,1.6vw,10px); font-weight: 700; color: var(--pink-dark); white-space: nowrap; flex-shrink: 0; }
+
+  .m-footer {
+    text-align: center;
+    padding: clamp(8px,1.5vw,10px) clamp(16px,3.5vw,28px) clamp(10px,2vw,14px);
+    border-top: 1px solid var(--pink-light); margin-top: auto;
+  }
+  .m-footer p { font-size: clamp(7px,1.2vw,8px); font-style: italic; color: var(--muted-pink); letter-spacing: 1.5px; }
+
+  @media print {
+    body { background: none; padding: 0; }
+    .switcher { display: none; }
+    .cardapio { display: block !important; box-shadow: none; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="switcher">
+  <button id="btn-paladars" class="active-paladars" onclick="show('paladars')">Novo Paladars</button>
+  <button id="btn-malef" onclick="show('malef')">Malef Cafeteria</button>
+</div>
+
+<!-- ═══════ PALADARS ═══════ -->
+<div id="cardapio-paladars" class="cardapio active">
+  <div class="p-page">
+
+    <div class="p-logo-area">
+      <img src="32886.png" alt="Novo Paladars" onerror="this.style.display='none'">
+    </div>
+    <hr class="p-top-rule">
+
+    <div class="p-cat">Espetos</div>
+    <div class="p-item"><span class="p-item-name">Coração</span><span class="p-item-price">R$ 9,90</span></div>
+    <div class="p-item"><span class="p-item-name">Medalhão</span><span class="p-item-price">R$ 9,90</span></div>
+    <div class="p-item"><span class="p-item-name">Carne Bacon</span><span class="p-item-price">R$ 9,90</span></div>
+    <div class="p-item"><span class="p-item-name">Boi</span><span class="p-item-price">R$ 9,90</span></div>
+    <div class="p-item"><span class="p-item-name">Porco</span><span class="p-item-price">R$ 9,90</span></div>
+
+    <div class="p-cat">Bebidas</div>
+    <div class="p-item"><span class="p-item-name">Água</span><span class="p-item-price">R$ 4,00</span></div>
+    <div class="p-item"><span class="p-item-name">H2O</span><span class="p-item-price">R$ 10,00</span></div>
+    <div class="p-item"><span class="p-item-name">Refri Lata</span><span class="p-item-price">R$ 7,00</span></div>
+    <div class="p-item"><span class="p-item-name">Corona</span><span class="p-item-price">R$ 12,00</span></div>
+    <div class="p-item"><span class="p-item-name">Stella Gold</span><span class="p-item-price">R$ 12,00</span></div>
+    <div class="p-item"><span class="p-item-name">Red Bull</span><span class="p-item-price">R$ 15,00</span></div>
+
+    <div class="p-cat">Sucos da Fruta</div>
+    <div class="p-item"><span class="p-item-name">Morango</span><span class="p-item-price">R$ 12,00</span></div>
+    <div class="p-item"><span class="p-item-name">Cajá</span><span class="p-item-price">R$ 10,00</span></div>
+    <div class="p-item"><span class="p-item-name">Maracujá</span><span class="p-item-price">R$ 10,00</span></div>
+
+    <div class="p-cat">Petisco</div>
+    <div class="p-item"><span class="p-item-name">Torresmos</span><span class="p-item-price">R$ 16,00</span></div>
+
+    <div class="p-cat">Pizzas Tamanho G · 8 Fatias</div>
+    <div class="p-pizza-grid">
+      <div class="p-pizza-card"><span class="p-item-name">Nordestina</span><span class="p-item-price">R$ 65,00</span></div>
+      <div class="p-pizza-card"><span class="p-item-name">Paladars</span><span class="p-item-price">R$ 60,00</span></div>
+      <div class="p-pizza-card"><span class="p-item-name">Calabresa</span><span class="p-item-price">R$ 55,00</span></div>
+      <div class="p-pizza-card"><span class="p-item-name">Frango Catupiry</span><span class="p-item-price">R$ 50,00</span></div>
+    </div>
+    <div class="p-fatia-row">
+      <div>
+        <div class="p-item-name">Fatia Express</div>
+        <div class="p-item-desc">Sabor da sua preferência</div>
+      </div>
+      <span class="p-item-price">R$ 10,00</span>
+    </div>
+
+    <div class="p-cat">Combos</div>
+    <div class="p-combo-card">
+      <div class="p-combo-info">
+        <div class="p-combo-name">Combo Arrumadinho</div>
+        <div class="p-combo-desc">Espeto da sua preferência · Baião · Farofa<br>Vinagrete · Refri lata ou Suco · Docinho de brinde</div>
+      </div>
+      <div class="p-combo-price">R$ 29,90</div>
+    </div>
+    <div class="p-combo-card">
+      <div class="p-combo-info">
+        <div class="p-combo-name">Combo Pizza Express</div>
+        <div class="p-combo-desc">Fatia de pizza da sua preferência · Refrigerante</div>
+      </div>
+      <div class="p-combo-price">Consulte</div>
+    </div>
+
+    <div class="p-cat">Adicionais</div>
+    <div class="p-add-row">
+      <div class="p-add-chip">Barbecue de Goiaba <span class="p-chip-price">R$ 15,00</span></div>
+      <div class="p-add-chip">Cheddar <span class="p-chip-price">R$ 15,00</span></div>
+      <div class="p-add-chip">Cream Cheese <span class="p-chip-price">R$ 15,00</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════ MALEF ═══════ -->
+<div id="cardapio-malef" class="cardapio">
+  <div class="m-page">
+
+    <div class="m-header">
+      <div class="m-logo-circle">
+        <img src="32888.png" alt="Malef" onerror="this.style.display='none'">
+      </div>
+      <div class="m-header-text">
+        <div class="m-header-sub">Cafeteria &amp; Confeitaria</div>
+        <div class="m-header-name">Malef</div>
+        <div class="m-header-rule"></div>
+        <div class="m-header-tag">Cardápio</div>
+      </div>
+    </div>
+
+    <div class="m-content">
+
+      <div class="m-section-heading">
+        <h2>Combos Malef</h2>
+        <div class="m-heading-deco"><span></span><i></i><span></span></div>
+      </div>
+
+      <div class="m-combo-card">
+        <div class="m-combo-top"><div class="m-combo-name">Combo Quero Mais</div><div class="m-combo-tag">Salgado</div></div>
+        <div class="m-combo-desc">Coxinha + Refri ou Suco + Docinho</div>
+        <div class="m-combo-price">R$ 20,00</div>
+      </div>
+      <div class="m-combo-card">
+        <div class="m-combo-top"><div class="m-combo-name">Combo Quero Mais</div><div class="m-combo-tag">Salgado</div></div>
+        <div class="m-combo-desc">Empada + Refrigerante ou Suco + Docinho</div>
+        <div class="m-combo-price">R$ 20,00</div>
+      </div>
+      <div class="m-combo-card">
+        <div class="m-combo-top"><div class="m-combo-name">Combo Campeão</div><div class="m-combo-tag">Favorito</div></div>
+        <div class="m-combo-desc">Coxinha ou Empada + Café com Leite</div>
+        <div class="m-combo-price">R$ 20,00</div>
+      </div>
+      <div class="m-combo-card">
+        <div class="m-combo-top"><div class="m-combo-name">Caldo de Carne</div><div class="m-combo-tag">Especial</div></div>
+        <div class="m-combo-desc">Quentinho e reconfortante</div>
+        <div class="m-combo-price">R$ 12,00</div>
+      </div>
+      <div class="m-combo-card">
+        <div class="m-combo-top"><div class="m-combo-name">Combo Malef Experience</div><div class="m-combo-tag">Premium</div></div>
+        <div class="m-combo-desc">Croissant Grande + Café com Leite ou Refri Lata + Docinho</div>
+        <div class="m-combo-price">R$ 40,00</div>
+      </div>
+
+      <!-- GRID: salgados (col 1) + doces (col 2) -->
+      <div class="m-bottom-grid">
+
+        <!-- COLUNA ESQUERDA: salgados -->
+        <div>
+          <div class="m-cat-block">
+            <div class="m-cat-title">Coxinhas <span class="m-cat-dot"></span></div>
+            <div class="m-item"><span class="m-item-name">Frango</span><span class="m-item-price">R$ 12,00</span></div>
+            <div class="m-item"><span class="m-item-name">Calabresa</span><span class="m-item-price">R$ 12,00</span></div>
+            <div class="m-item"><span class="m-item-name">Carne de Sol</span><span class="m-item-price">R$ 14,00</span></div>
+          </div>
+          <div class="m-cat-block">
+            <div class="m-cat-title">Empadas <span class="m-cat-dot"></span></div>
+            <div class="m-item"><span class="m-item-name">Calabresa</span><span class="m-item-price">R$ 12,00</span></div>
+            <div class="m-item"><span class="m-item-name">Carne de Sol</span><span class="m-item-price">R$ 14,00</span></div>
+            <div class="m-item"><span class="m-item-name">Costelinha Suina</span><span class="m-item-price">R$ 14,00</span></div>
+          </div>
+          <div class="m-cat-block">
+            <div class="m-cat-title">Pao de Queijo Recheado <span class="m-cat-dot"></span></div>
+            <div class="m-item"><span class="m-item-name">Carne de Sol</span><span class="m-item-price">R$ 14,00</span></div>
+            <div class="m-item"><span class="m-item-name">Frango</span><span class="m-item-price">R$ 14,00</span></div>
+          </div>
+          <div class="m-cat-block">
+            <div class="m-cat-title">Croissants <span class="m-cat-dot"></span></div>
+            <div class="m-item"><span class="m-item-name">Frango</span><span class="m-item-price">R$ 30,00</span></div>
+            <div class="m-item"><span class="m-item-name">Carne de Sol</span><span class="m-item-price">R$ 35,00</span></div>
+            <div class="m-item"><span class="m-item-name">Sem Recheio</span><span class="m-item-price">R$ 25,00</span></div>
+          </div>
+        </div>
+
+        <!-- COLUNA DIREITA: doces -->
+        <div>
+          <div class="m-cat-block">
+            <div class="m-cat-title">Doces <span class="m-cat-dot"></span></div>
+            <div class="m-item"><span class="m-item-name">Cone Trufado</span><span class="m-item-price">R$ 15,00</span></div>
+            <div class="m-item"><span class="m-item-name">Pudim</span><span class="m-item-price">R$ 12,00</span></div>
+            <div class="m-item"><span class="m-item-name">Docinho</span><span class="m-item-price">R$ 5,00</span></div>
+            <div class="m-item"><span class="m-item-name">Cookies</span><span class="m-item-price">R$ 12,00</span></div>
+            <div class="m-item"><span class="m-item-name">Copudim</span><span class="m-item-price">R$ 27,00</span></div>
+            <div class="m-item"><span class="m-item-name">Copo Brownie</span><span class="m-item-price">R$ 25,00</span></div>
+            <div class="m-item"><span class="m-item-name">Fatia de Torta</span><span class="m-item-price">R$ 27,00</span></div>
+            <div class="m-item"><span class="m-item-name">Cheesecake</span><span class="m-item-price">R$ 25,00</span></div>
+            <div class="m-item"><span class="m-item-name">Biscoito Folhado</span><span class="m-item-price">R$ 8,00</span></div>
+            <div class="m-item"><span class="m-item-name">Pipoca Gourmet</span><span class="m-item-price">R$ 12,00</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="m-footer">
+      <p>feito com carinho &nbsp;·&nbsp; Malef Cafeteria &amp; Confeitaria</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function show(which) {
+    document.getElementById('cardapio-paladars').classList.toggle('active', which === 'paladars');
+    document.getElementById('cardapio-malef').classList.toggle('active', which === 'malef');
+    document.getElementById('btn-paladars').className = which === 'paladars' ? 'active-paladars' : '';
+    document.getElementById('btn-malef').className    = which === 'malef'    ? 'active-malef'    : '';
+  }
+</script>
+</body>
+</html>
